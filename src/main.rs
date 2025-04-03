@@ -1,8 +1,9 @@
 use winit::application::ApplicationHandler;
-use winit::event::WindowEvent;
+use winit::event::{DeviceEvent, ElementState, RawKeyEvent, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::platform::windows::IconExtWindows;
-use winit::window::{Window, WindowId, WindowAttributes, Icon};
+use winit::window::{Fullscreen, Icon, Window, WindowAttributes, WindowId};
+use winit::keyboard::{self, NamedKey, PhysicalKey};
 
 #[derive(Default)]
 struct App {
@@ -17,7 +18,7 @@ impl ApplicationHandler for App {
         .with_title("Alto Browser")
         .with_inner_size(winit::dpi::LogicalSize::new(800.0, 600.0))
         .with_window_icon(icon)
-        .with_resizable(false);
+        .with_resizable(true);
 
         self.window = Some(event_loop.create_window(attrs).unwrap());
     }
@@ -32,9 +33,51 @@ impl ApplicationHandler for App {
 
                 self.window.as_ref().unwrap().request_redraw();
             }
+            WindowEvent::KeyboardInput { device_id, event, is_synthetic } => {
+                let window_ref = self.window.as_ref().unwrap();
+                match (event.physical_key, event.state) {
+                    (PhysicalKey::Code(keyboard::KeyCode::F11), ElementState::Pressed) => { 
+                        match self.window.as_ref().unwrap().fullscreen() {
+                            None => { 
+                                window_ref.set_fullscreen(Some(Fullscreen::Borderless(window_ref.current_monitor())))
+                            }
+                            Some(Fullscreen::Borderless(_monitor_handle)) => {window_ref.set_fullscreen(None)}
+                            _ => (),
+                        }
+                    }
+                    _ => (),
+                }
+            }
             _ => (),
         }
     }
+
+    // fn device_event(
+    //         &mut self,
+    //         event_loop: &ActiveEventLoop,
+    //         device_id: winit::event::DeviceId,
+    //         event: DeviceEvent,
+    //     ) {
+    //     match event {
+    //         DeviceEvent::Key(RawKeyEvent { physical_key, state }) => {
+    //             let window_ref = self.window.as_ref().unwrap();
+    //             match (physical_key, state) {
+    //                 (PhysicalKey::Code(keyboard::KeyCode::F11), ElementState::Pressed) => { 
+    //                     match self.window.as_ref().unwrap().fullscreen() {
+    //                         None => { 
+    //                             window_ref.set_fullscreen(Some(Fullscreen::Borderless(window_ref.current_monitor())))
+    //                         }
+    //                         Some(Fullscreen::Borderless(_monitor_handle)) => {window_ref.set_fullscreen(None)}
+    //                         _ => (),
+    //                     }
+    //                 }
+    //                 _ => (),
+    //             }
+    //         }
+    //         _ => (),
+    //     }   
+    // }
+
 }
 
 fn main() {
