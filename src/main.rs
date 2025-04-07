@@ -14,15 +14,40 @@ impl Default for App{
     }
 }
 
+fn setup_custom_fonts(ctx: &egui::Context) {
+    let mut fonts = egui::FontDefinitions::default();
+
+    fonts.font_data.insert(
+        "my_font".to_owned(),
+        egui::FontData::from_static(include_bytes!("SupremeLL-Medium.otf")).into(),
+    );
+
+    fonts.families.get_mut(&egui::FontFamily::Proportional).unwrap()
+        .insert(0, "my_font".to_owned());
+
+    ctx.set_fonts(fonts);
+}
+
 impl eframe::App for App{
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        setup_custom_fonts(ctx);
         CentralPanel::default().show(ctx, |ui|{
             ui.horizontal( |ui|{
-                ui.text_edit_singleline(&mut "Some");
+                if ui.button("←").clicked(){
+                    println!("Loading previous page");
+                }
+                if ui.button("↺").clicked(){
+                    println!("Update current page");
+                }
+                if ui.button("→").clicked(){
+                    println!("Loading next page");
+                }
+                
+                ui.add (TextEdit::singleline(&mut self.url));
                 if ui.button("Перейти").clicked(){
                     println!("Loading: {}", self.url);
-                }
-            })
+                }   
+            });
         });
     }
 }
