@@ -3,13 +3,17 @@ use eframe::{*};
 use image::open;
 
 struct App{
-    url : String
+    url : String,
+    tabs : Vec<String>,
+    current_tab : usize
 }
 
 impl Default for App{
     fn default() -> App{
         App {
-            url : String::from("https://example.com")
+            url : String::from("https://example.com"),
+            tabs : ["start tab".to_string()].to_vec(),
+            current_tab : 0,
         }
     }
 }
@@ -32,6 +36,42 @@ impl eframe::App for App{
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         setup_custom_fonts(ctx);
         CentralPanel::default().show(ctx, |ui|{
+            ui.horizontal(|ui|{
+                for tab_i in 0..self.tabs.len(){
+                    if self.tabs.len() > tab_i{
+                        if self.tabs.len()!=1{
+                            ui.spacing_mut().item_spacing = egui::vec2(-14.0, 0.0);
+                        } 
+                        if ui.selectable_label(
+                            if self.current_tab == tab_i {true} else {false},
+                            self.tabs[tab_i].clone() + {if self.tabs.len()!=1 {"    "} else {""}})
+                        .clicked() {
+                            self.current_tab = tab_i;
+                        };
+
+                        ui.spacing_mut().item_spacing = egui::vec2(5.0, 0.0);
+                        if self.tabs.len()!=1{
+                            if ui.button("x").clicked() {
+                                self.tabs.remove(tab_i);
+                                if tab_i < self.current_tab {
+                                    self.current_tab -= 1
+                                }
+                                else if tab_i == self.current_tab {
+                                    self.current_tab = 
+                                    if tab_i == self.tabs.len() {
+                                        tab_i-1
+                                    } else {
+                                        tab_i
+                                    }
+                                }
+                            }
+                        } 
+                    }
+                };
+                if ui.button("+").clicked() {
+                    self.tabs.push("temp_name".to_string());
+                }
+            });
             ui.horizontal( |ui|{
                 if ui.button("←").clicked(){
                     println!("Loading previous page");
